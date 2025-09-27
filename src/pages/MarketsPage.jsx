@@ -3,9 +3,10 @@ import { useWallet } from '../contexts/WalletContext'
 import './MarketsPage.css'
 
 function MarketsPage({ onBack }) {
-  const { isConnected } = useWallet();
+  const { isConnected, isCorrectNetwork, pyusdBalance, isLoadingBalance, fetchPyusdBalance } = useWallet();
   const [selectedMarket, setSelectedMarket] = useState(null);
   const [expandedMarket, setExpandedMarket] = useState(null);
+  const [depositAmounts, setDepositAmounts] = useState({});
 
   const markets = [
     {
@@ -52,6 +53,11 @@ function MarketsPage({ onBack }) {
           <div className="connect-prompt">
             <h2>Connect Your Wallet</h2>
             <p>Please connect your wallet to participate in prediction markets</p>
+          </div>
+        ) : !isCorrectNetwork ? (
+          <div className="connect-prompt">
+            <h2>Wrong Network</h2>
+            <p>Please switch to Arbitrum Sepolia to participate in prediction markets</p>
           </div>
         ) : (
           <div className="markets-container">
@@ -112,21 +118,59 @@ function MarketsPage({ onBack }) {
                       </div>
                       
                       <div className="deposit-section">
+                        <div className="balance-info">
+                          <span className="balance-label">Your PYUSD Balance:</span>
+                          <span className="balance-amount">
+                            {isLoadingBalance ? 'Loading...' : `${pyusdBalance} PYUSD`}
+                          </span>
+                          <button 
+                            className="refresh-balance-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              fetchPyusdBalance();
+                            }}
+                            disabled={isLoadingBalance}
+                          >
+                            🔄
+                          </button>
+                        </div>
+                        
                         <div className="deposit-input">
                           <input 
                             type="number" 
-                            placeholder="Enter amount (USDC)"
+                            placeholder="Enter amount (PYUSD)"
                             className="amount-input"
+                            value={depositAmounts[market.id] || ''}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              setDepositAmounts(prev => ({
+                                ...prev,
+                                [market.id]: e.target.value
+                              }));
+                            }}
                             onClick={(e) => e.stopPropagation()}
                           />
-                          <span className="currency">USDC</span>
+                          <button 
+                            className="max-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDepositAmounts(prev => ({
+                                ...prev,
+                                [market.id]: pyusdBalance
+                              }));
+                            }}
+                          >
+                            MAX
+                          </button>
                         </div>
+                        
                         <button 
                           className="deposit-btn"
                           onClick={(e) => {
                             e.stopPropagation();
                             // Handle deposit logic here
                           }}
+                          disabled={!depositAmounts[market.id] || parseFloat(depositAmounts[market.id]) <= 0 || parseFloat(depositAmounts[market.id]) > parseFloat(pyusdBalance)}
                         >
                           Deposit & Predict
                         </button>

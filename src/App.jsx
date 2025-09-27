@@ -9,9 +9,13 @@ function WalletButton() {
     isConnected, 
     isConnecting, 
     error, 
+    network,
+    isCorrectNetwork,
     connectWallet, 
     disconnectWallet, 
-    formatAddress 
+    switchToArbitrumSepolia,
+    formatAddress,
+    getNetworkName
   } = useWallet();
 
   return (
@@ -31,6 +35,14 @@ function WalletButton() {
         <div className="wallet-connected">
           <div className="wallet-info">
             <span className="wallet-address">{formatAddress(account)}</span>
+            <span className="network-info">
+              {network ? getNetworkName(network) : 'Unknown Network'}
+            </span>
+            {!isCorrectNetwork && (
+              <button className="switch-network-btn" onClick={switchToArbitrumSepolia}>
+                Switch to Arbitrum Sepolia
+              </button>
+            )}
             <button className="disconnect-btn" onClick={disconnectWallet}>
               Disconnect
             </button>
