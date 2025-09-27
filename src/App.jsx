@@ -1,34 +1,77 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { WalletProvider, useWallet } from './contexts/WalletContext'
 
-function App() {
-  const [count, setCount] = useState(0)
+function WalletButton() {
+  const { 
+    account, 
+    isConnected, 
+    isConnecting, 
+    error, 
+    connectWallet, 
+    disconnectWallet, 
+    formatAddress 
+  } = useWallet();
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="wallet-section">
+      {!isConnected ? (
+        <div className="wallet-connect">
+          <button 
+            className="connect-btn" 
+            onClick={connectWallet}
+            disabled={isConnecting}
+          >
+            {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+          </button>
+          {error && <p className="error-message">{error}</p>}
+        </div>
+      ) : (
+        <div className="wallet-connected">
+          <div className="wallet-info">
+            <span className="wallet-address">{formatAddress(account)}</span>
+            <button className="disconnect-btn" onClick={disconnectWallet}>
+              Disconnect
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <WalletProvider>
+      <div className="app">
+        <header className="header">
+          <h1>No-Loss Prediction Market</h1>
+          <p>Earn yield on your predictions with zero risk</p>
+        </header>
+        
+        <main className="main">
+          <div className="market-section">
+            <WalletButton />
+            
+            <div className="info-cards">
+              <div className="info-card">
+                <h3>How it works</h3>
+                <ul>
+                  <li>Make predictions on yes/no questions</li>
+                  <li>Your deposit earns yield on Aave</li>
+                  <li>Winners get yield + deposit back</li>
+                  <li>Losers get deposit back (no loss!)</li>
+                </ul>
+              </div>
+              
+              <div className="info-card">
+                <h3>Current Markets</h3>
+                <p>Connect your wallet to see active prediction markets</p>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </WalletProvider>
   )
 }
 
